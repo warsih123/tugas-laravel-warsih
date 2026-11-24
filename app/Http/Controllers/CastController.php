@@ -3,64 +3,78 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cast;
-use App\Http\Requests\StoreCastRequest;
-use App\Http\Requests\UpdateCastRequest;
+use Illuminate\Http\Request;
 
 class CastController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Menampilkan daftar cast
     public function index()
     {
-        //
+        $casts = Cast::orderBy('name')->paginate(10);
+
+        return view('admin.cast.index', compact('casts'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    // Menampilkan form tambah cast
     public function create()
     {
-        //
+        return view('admin.cast.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreCastRequest $request)
+    // Menyimpan data cast
+    public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:45',
+            'age' => 'required|integer|min:0',
+            'bio' => 'nullable|string',
+        ]);
+
+        Cast::create([
+            'name' => $request->name,
+            'age' => $request->age,
+            'bio' => $request->bio,
+        ]);
+
+        return redirect()
+            ->route('admin.casts.index')
+            ->with('success', 'Data cast berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Cast $cast)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
+    // Menampilkan form edit cast
     public function edit(Cast $cast)
     {
-        //
+        return view('admin.cast.edit', compact('cast'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateCastRequest $request, Cast $cast)
+    // Memperbarui data cast
+    public function update(Request $request, Cast $cast)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:45',
+            'age' => 'required|integer|min:0',
+            'bio' => 'nullable|string',
+        ]);
+
+        $cast->update([
+            'name' => $request->name,
+            'age' => $request->age,
+            'bio' => $request->bio,
+        ]);
+
+        return redirect()
+            ->route('admin.casts.index')
+            ->with('success', 'Data cast berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // Menghapus data cast
     public function destroy(Cast $cast)
     {
-        //
+        $cast->delete();
+
+        return redirect()
+            ->route('admin.casts.index')
+            ->with('success', 'Data cast berhasil dihapus.');
     }
 }
+

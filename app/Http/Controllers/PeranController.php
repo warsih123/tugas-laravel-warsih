@@ -3,64 +3,74 @@
 namespace App\Http\Controllers;
 
 use App\Models\Peran;
-use App\Http\Requests\StorePeranRequest;
-use App\Http\Requests\UpdatePeranRequest;
+use App\Models\Cast;
+use App\Models\Film;
+use Illuminate\Http\Request;
 
 class PeranController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Menampilkan daftar peran
     public function index()
     {
-        //
+        $perans = Peran::with(['cast', 'film'])->paginate(10);
+
+        return view('admin.peran.index', compact('perans'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    // Form tambah peran
     public function create()
     {
-        //
+        $casts = Cast::all();
+        $films = Film::all();
+
+        return view('admin.peran.create', compact('casts', 'films'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StorePeranRequest $request)
+    // Menyimpan data peran
+    public function store(Request $request)
     {
-        //
+        $request->validate([
+            'actor' => 'required|string|max:255',
+            'cast_id' => 'required|exists:casts,id',
+            'film_id' => 'required|exists:films,id',
+        ]);
+
+        Peran::create($request->only('actor', 'cast_id', 'film_id'));
+
+        return redirect()->route('admin.perans.index')
+            ->with('success', 'Data peran berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Peran $peran)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
+    // Form edit peran
     public function edit(Peran $peran)
     {
-        //
+        $casts = Cast::all();
+        $films = Film::all();
+
+        return view('admin.peran.edit', compact('peran', 'casts', 'films'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdatePeranRequest $request, Peran $peran)
+    // Memperbarui data peran
+    public function update(Request $request, Peran $peran)
     {
-        //
+        $request->validate([
+            'actor' => 'required|string|max:255',
+            'cast_id' => 'required|exists:casts,id',
+            'film_id' => 'required|exists:films,id',
+        ]);
+
+        $peran->update($request->only('actor', 'cast_id', 'film_id'));
+
+        return redirect()->route('admin.perans.index')
+            ->with('success', 'Data peran berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // Menghapus data peran
     public function destroy(Peran $peran)
     {
-        //
+        $peran->delete();
+
+        return redirect()->route('admin.perans.index')
+            ->with('success', 'Data peran berhasil dihapus.');
     }
 }
